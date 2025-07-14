@@ -5,12 +5,15 @@ from google import genai
 from google.genai.errors import APIError
 import os
 from dotenv import load_dotenv
+from cli_chatbot.logging_system import configure_logging
 
 
 class GeminiLLMInterface(LLMInterface):
     """Concrete implementation of LLMInterface for Gemini API."""
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
+        # Configure logging system with LLM logging enabled
+        configure_logging(llm_logging=True)
         """Initialize the Gemini client with configuration.
 
         Args:
@@ -34,7 +37,7 @@ class GeminiLLMInterface(LLMInterface):
         api_key = os.getenv('GEMINI_API_KEY')
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable not found. Please set it in your environment or .env file")
-        self.client = genai.Client(self.model, api_key=api_key)
+        self.client = genai.Client(api_key=api_key)
         self.model = config.get('model', 'gemini-2.5-flash') if config else 'gemini-2.5-flash'
         self.system_instruction = config.get('system_instruction', "You are a helpful assistant.")
         # Handle generation config
@@ -53,7 +56,7 @@ class GeminiLLMInterface(LLMInterface):
         Returns:
             The LLM's text response or error message string
         """
-        logger = logging.getLogger()
+        logger = logging.getLogger(__name__)
         logger.info(f"LLM Request: {message}")
         
         try:

@@ -13,7 +13,7 @@ class TestGeminiLLMInterface:
         """Test that GeminiClient loads API key from environment variables."""
         with patch.dict('os.environ', {'GEMINI_API_KEY': 'test-env-key'}, clear=True):
             GeminiLLMInterface()
-            mock_client.assert_called_once_with('gemini-2.5-flash', api_key='test-env-key')
+            mock_client.assert_called_once_with(api_key='test-env-key')
 
     @pytest.mark.api_key
     @patch('cli_chatbot.llm.gemini_client.load_dotenv')
@@ -36,7 +36,7 @@ class TestGeminiLLMInterface:
             
             # Verify both dotenv loading and client initialization
             mock_dotenv.assert_called_once()
-            mock_client.assert_called_once_with('gemini-2.5-flash', api_key='test-dotenv-key')
+            mock_client.assert_called_once_with(api_key='test-dotenv-key')
 
     @patch('google.genai.Client')
     def test_send_message_success(self, mock_client):
@@ -121,7 +121,7 @@ class TestGeminiLLMInterface:
         llm = GeminiLLMInterface(config=config)
         
         # Verify client initialized with correct model
-        mock_client.assert_called_once_with('gemini-2.0-pro', api_key=os.getenv('GEMINI_API_KEY'))
+        mock_client.assert_called_once_with(api_key=os.getenv('GEMINI_API_KEY'))
         
         # Verify generation config
         response = llm.send_message("Test message")
