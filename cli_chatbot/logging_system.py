@@ -30,12 +30,14 @@ def setup_logging_dirs():
     log_dir = Path("logs")
     try:
         log_dir.mkdir(parents=True, exist_ok=True)
+        mcp_dir = log_dir / "mcp"
+        mcp_dir.mkdir(exist_ok=True)
         return str(log_dir.absolute())
     except OSError as e:
         logging.error(f"Failed to create logging directories: {e}")
         raise
 
-def configure_logging(llm_logging=False, max_bytes=1048576, backup_count=5, json_format=False):
+def configure_logging(llm_logging=False, max_bytes=1048576, backup_count=5, json_format=False, test_mode=False):
     """Configure logging setup with rotation.
     
     Args:
@@ -43,6 +45,7 @@ def configure_logging(llm_logging=False, max_bytes=1048576, backup_count=5, json
         max_bytes: Maximum log file size before rotation (default: 1MB)
         backup_count: Number of backup logs to keep (default: 5)
         json_format: If True, outputs logs in JSON format (default: False)
+        test_mode: If True, disables console output and reduces log verbosity
     """
     log_dir = setup_logging_dirs()
     logger = logging.getLogger()
@@ -86,7 +89,7 @@ def configure_logging(llm_logging=False, max_bytes=1048576, backup_count=5, json
     
     # Filesystem logging with rotation
     fs_handler = RotatingFileHandler(
-        Path(log_dir) / "filesystem.log",
+        Path(log_dir) / "mcp/filesystem.log",
         maxBytes=max_bytes,
         backupCount=backup_count
     )
@@ -95,7 +98,7 @@ def configure_logging(llm_logging=False, max_bytes=1048576, backup_count=5, json
     
     # Other servers logging with rotation
     servers_handler = RotatingFileHandler(
-        Path(log_dir) / "other_servers.log",
+        Path(log_dir) / "mcp/other_servers.log",
         maxBytes=max_bytes,
         backupCount=backup_count
     )

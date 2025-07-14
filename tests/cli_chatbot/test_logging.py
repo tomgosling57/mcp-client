@@ -39,7 +39,8 @@ class TestLogging(unittest.TestCase):
         from cli_chatbot.logging_system import configure_logging
         
         # Configure logger using actual implementation with custom rotation params
-        configure_logging(max_bytes=100, backup_count=1)
+        configure_logging(max_bytes=100, backup_count=1, test_mode=True)
+        logging.getLogger().setLevel(logging.INFO)
         
         try:
             # Write test message
@@ -71,15 +72,20 @@ class TestLogging(unittest.TestCase):
         from cli_chatbot.logging_system import configure_logging
         
         # Configure logger
-        configure_logging(llm_logging=True)
+        configure_logging(llm_logging=True, test_mode=True)
         
         try:
-            # Verify all log files exist
-            for log_name in ["chat.log", "llm.log", "tools.log",
-                           "filesystem.log", "other_servers.log"]:
+            # Verify standard log files exist
+            for log_name in ["chat.log", "llm.log", "tools.log"]:
                 log_file = Path("logs") / log_name
                 self.assertTrue(log_file.exists(),
-                              f"{log_name} was not created")
+                               f"{log_name} was not created")
+            
+            # Verify MCP log files exist in mcp subdirectory
+            for log_name in ["filesystem.log", "other_servers.log"]:
+                log_file = Path("logs") / "mcp" / log_name
+                self.assertTrue(log_file.exists(),
+                               f"mcp/{log_name} was not created")
         finally:
             logging.shutdown()
 
@@ -90,7 +96,7 @@ class TestLogging(unittest.TestCase):
         from cli_chatbot.llm.gemini_client import GeminiLLMInterface
 
         # Configure logging for LLM
-        configure_logging(llm_logging=True)
+        configure_logging(llm_logging=True, test_mode=True)
 
         try:
             test_request = "Test LLM request"
