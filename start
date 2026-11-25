@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+
+if [ -x ".venv/bin/python" ]; then
+    PYTHON=".venv/bin/python"
+else
+    PYTHON="${PYTHON:-python3}"
+fi
+
+"$PYTHON" -c "
+import asyncio
+import sys
+
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+
+from cli_chatbot.chat.history import ChatHistoryManager
+from cli_chatbot.chat.mcp_loop import MCPChatLoop
+from cli_chatbot.llm.litellm_client import LiteLLMInterface
+
+async def main():
+    server = StdioServerParameters(
+        command=sys.executable,
+        args=['examples/calculator_server.py'],
+    )
+    async with stdio_client(server) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            await MCPChatLoop(
+                ChatHistoryManager(), LiteLLMInterface(), session
+            ).run()
+
+asyncio.run(main())
+"
