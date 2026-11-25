@@ -35,7 +35,7 @@ class ServerLauncher:
                 # Add NullHandler to suppress output
                 self.logger.addHandler(logging.NullHandler())
             else:
-                self.logger.setLevel(logging.INFO)
+                self.logger.setLevel(logging.WARNING)
                 handler = logging.StreamHandler()
                 handler.setFormatter(logging.Formatter(
                     '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

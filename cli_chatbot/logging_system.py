@@ -37,7 +37,7 @@ def setup_logging_dirs():
         logging.error(f"Failed to create logging directories: {e}")
         raise
 
-def configure_logging(llm_logging=False, max_bytes=1048576, backup_count=5, json_format=False, test_mode=False):
+def configure_logging(llm_logging=False, max_bytes=1048576, backup_count=5, json_format=False, test_mode=False, level=None):
     """Configure logging setup with rotation.
     
     Args:
@@ -46,10 +46,15 @@ def configure_logging(llm_logging=False, max_bytes=1048576, backup_count=5, json
         backup_count: Number of backup logs to keep (default: 5)
         json_format: If True, outputs logs in JSON format (default: False)
         test_mode: If True, disables console output and reduces log verbosity
+        level: Log level override. Defaults to LOG_LEVEL or WARNING, which
+            keeps info-level messages out of the logs.
     """
     log_dir = setup_logging_dirs()
     logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
+    if level is None:
+        level_name = os.getenv("LOG_LEVEL", "WARNING").upper()
+        level = getattr(logging, level_name, logging.WARNING)
+    logger.setLevel(level)
     
     # Remove any existing handlers to prevent duplicates
     for handler in logger.handlers[:]:
