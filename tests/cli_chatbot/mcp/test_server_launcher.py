@@ -52,7 +52,11 @@ def test_launch_server_success(mock_popen):
         "command": ["python", "-m", "mock.server"],
         "args": []
     }
-    
+
+    # Empty streams so the log threads end instead of spinning forever
+    mock_popen.return_value.stdout.readline.side_effect = [""]
+    mock_popen.return_value.stderr.readline.side_effect = [""]
+
     process = launcher.launch_server(mock_config)
     mock_popen.assert_called_once()
     assert process == mock_popen.return_value
@@ -67,7 +71,10 @@ def test_workspace_path_resolution(mock_popen):
         "command": ["python", "-m", "mcp.servers.filesystem"],
         "args": ["${workspaceFolder}/workspace/"]
     }
-    
+
+    mock_popen.return_value.stdout.readline.side_effect = [""]
+    mock_popen.return_value.stderr.readline.side_effect = [""]
+
     launcher.launch_server(mock_config)
     called_args = mock_popen.call_args[0][0]
     assert "/test/path/workspace/" in called_args[-1]

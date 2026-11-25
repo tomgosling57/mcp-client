@@ -91,27 +91,31 @@ class TestLogging(unittest.TestCase):
 
     def test_llm_logging(self):
         """Test that LLM interactions are properly logged."""
-        from unittest.mock import patch
+        from unittest.mock import MagicMock, patch
         from cli_chatbot.logging_system import configure_logging
-        from cli_chatbot.llm.gemini_client import GeminiLLMInterface
+        from cli_chatbot.llm.litellm_client import LiteLLMInterface
 
         # Configure logging for LLM
         configure_logging(llm_logging=True, test_mode=True)
 
         try:
             test_request = "Test LLM request"
-            
-            # Mock the logger and Gemini client
+
+            # Mock the logger and LiteLLM completion
             with patch('logging.getLogger') as mock_get_logger, \
-                 patch('cli_chatbot.llm.gemini_client.genai.Client') as mock_client:
+                 patch('cli_chatbot.llm.litellm_client.load_dotenv'), \
+                 patch('cli_chatbot.llm.litellm_client.completion') as mock_completion, \
+                 patch.dict(os.environ, {
+                     "LLM_PROVIDER": "gemini",
+                     "LLM_MODEL": "gemini-2.5-flash",
+                 }, clear=True):
                 mock_logger = mock_get_logger.return_value
-                
+
                 # Setup mock response
-                mock_response = type('MockResponse', (), {'text': 'Mock response'})
-                mock_client.return_value.generate_content.return_value = mock_response
-                
+                mock_completion.return_value.choices[0].message.content = "Mock response"
+
                 # Create and test LLM instance
-                llm = GeminiLLMInterface()
+                llm = LiteLLMInterface()
                 llm.send_message(test_request)
                 
                 # Verify logger was called with expected messages in order
